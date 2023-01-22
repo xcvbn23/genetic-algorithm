@@ -39,5 +39,5 @@ pip install -r requirements.txt
 ### Testing
 
 ```
-pytest -svv
+pytest -vvv -rP
 ```

@@ -1,7 +1,16 @@
+from enum import Enum
+import math
 import random
 from abc import ABC, abstractmethod
+import time
 
 import matplotlib.pyplot as plt
+
+
+class REPLACEMENT_METHOD(Enum):
+    RANDOM = 0
+    WEAK_PARENT = 1
+    BOTH_PARENTS = 2
 
 
 def single_point_crossover(gene_parent_1, gene_parent_2):
@@ -24,39 +33,49 @@ def tournament_selection(population) -> tuple:
 class GeneticAlgorithm(ABC):
     def __init__(self) -> list:
         self.individuals = []
-        for _ in range(self.population_size()):
+        for idx in range(self.population_size()):
             gene = []
             for gene_type, min, max in self.gene_definition():
                 if gene_type == int:
                     chromosome = random.randint(min, max)
-                    gene.append(chromosome)
                 elif gene_type == float:
                     chromosome = random.uniform(min, max)
-                    gene.append(chromosome)
+                gene.append(chromosome)
             fitness = 0
-            self.individuals.append((gene, fitness))
+            self.individuals.append((idx, gene, fitness))
             self.calculate_fitness()
 
+    def calculate_penalty(self, gene) -> int:
+        for i, (_, min, max) in enumerate(self.gene_definition()):
+            if gene[i] < min or gene[i] > max:
+                return -math.inf
+
+        return 0
+
     def calculate_fitness(self):
-        for i, individual in enumerate(self.individuals):
-            gene, fitness = individual
+        for individual in self.individuals:
+            idx, gene, fitness = individual
             fitness = self.fitness_func(gene)
-            individual = gene, fitness
-            self.individuals[i] = individual
+            penalty = self.calculate_penalty(gene)
+            individual = idx, gene, (fitness + penalty)
+            self.individuals[idx] = individual
 
     def run(self):
         total_fitness_per_generation = []
-        for _ in range(1, self.generations() + 1):
+        for n in range(1, self.generations() + 1):
+            print("Generation", n)
             # Selection
             parents = self.perform_selection()
             # Crossover
-            self.perform_crossover(parents)
+            children = self.perform_crossover(parents)
             # Mutation
-            self.perform_mutation()
+            children = self.perform_mutation(children)
+            # Replacement
+            self.perform_replacement(children, self.replacement_method())
             # Calculate fitness
             self.calculate_fitness()
 
-            total_fitness = sum(map(lambda individual: individual[1], self.individuals))
+            total_fitness = sum(map(lambda individual: individual[2], self.individuals))
             total_fitness_per_generation.append(total_fitness)
 
         x = range(1, self.generations() + 1)
@@ -68,44 +87,83 @@ class GeneticAlgorithm(ABC):
         )
         plt.xlabel("Generation")
         plt.ylabel("Fitness")
-        plt.show()
-        plt.savefig("plots/my_plot.png")
+        # plt.show()
+        plt.savefig(f"plots/{int(time.time())}.png")
         plt.close()
 
-    def perform_crossover(self, parents) -> None:
+        self.individuals.sort(key=lambda d: d[2], reverse=True)
+        for individual in self.individuals:
+            print(individual)
+        print("Best individual", self.individuals[0])
+
+    def perform_crossover(self, parents: list) -> list:
+        children = []
         for i in range(0, len(parents), 2):
             gene_parent_1 = self.individuals[i]
-            gene_parent_1, _ = gene_parent_1
+            idx_1, gene_parent_1, _ = gene_parent_1
 
             gene_parent_2 = self.individuals[i + 1]
-            gene_parent_2, _ = gene_parent_2
+            idx_2, gene_parent_2, _ = gene_parent_2
 
             gene_child_1, gene_child_2 = single_point_crossover(
                 gene_parent_1, gene_parent_2
             )
 
-            self.individuals[i] = gene_child_1, 0
-            self.individuals[i] = gene_child_2, 0
+            children.append((idx_1, gene_child_1, 0))
+            children.append((idx_2, gene_child_2, 0))
 
-    def perform_mutation(self):
-        for i in range(0, self.population_size()):
-            gene, _ = self.individuals[i]
+        return children
+
+    def perform_mutation(self, children: list) -> list:
+        mutated_children = []
+        for child in children:
+            idx, gene, _ = child
             for i, chromosome in enumerate(gene):
                 mutation_rate = 0.25
                 mutation_chance = random.random()
                 if mutation_chance > mutation_rate:
                     continue
 
-                gene_type, _, _ = self.gene_definition()[i]
+                gene_type, min, max = self.gene_definition()[i]
                 if gene_type == int:
-                    chromosome += random.randint(-1, 1)
+                    mutated_chromosome = chromosome + random.randint(-1, 1)
+                    while mutated_chromosome < min or mutated_chromosome > max:
+                        mutated_chromosome = chromosome + random.randint(-1, 1)
+                    chromosome = mutated_chromosome
                 elif gene_type == float:
-                    chromosome += random.uniform(-1, 1)
+                    mutated_chromosome = chromosome + random.uniform(-1, 1)
+                    while mutated_chromosome < min or mutated_chromosome > max:
+                        mutated_chromosome = chromosome + random.uniform(-1, 1)
+                    chromosome = mutated_chromosome
 
                 gene[i] = chromosome
-            self.individuals[i] = gene, 0
+            mutated_children.append((idx, gene, 0))
 
-    def perform_selection(self):
+        return mutated_children
+
+    def perform_replacement(
+        self, children: list, replacement: REPLACEMENT_METHOD
+    ) -> None:
+        if replacement == replacement.BOTH_PARENTS:
+            for child in children:
+                idx, _, _ = child
+                self.individuals[idx] = child
+        elif replacement == replacement.RANDOM:
+            for child in children:
+                random_position = random.randint(0, self.population_size() - 1)
+                self.individuals[random_position] = child
+        elif replacement == replacement.WEAK_PARENT:
+            for child in children:
+                idx, child_gene, _ = child
+                _, _, parent_fitness = self.individuals[idx]
+
+                child_fitness = self.fitness_func(child_gene) + self.calculate_penalty(
+                    child_gene
+                )
+                if child_fitness > parent_fitness:
+                    self.individuals[idx] = child
+
+    def perform_selection(self) -> list:
         parents = []
 
         for _ in range(0, self.num_of_parents(), 2):
@@ -137,5 +195,15 @@ class GeneticAlgorithm(ABC):
 
     @property
     @abstractmethod
+    def mutation_rate(self) -> float:
+        pass
+
+    @property
+    @abstractmethod
     def population_size(self) -> int:
         pass
+
+    @property
+    @abstractmethod
+    def replacement_method(self) -> REPLACEMENT_METHOD:
+        return REPLACEMENT_METHOD.RANDOM

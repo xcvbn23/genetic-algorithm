@@ -61,7 +61,7 @@ class GeneticAlgorithm(ABC):
             self.individuals[idx] = individual
 
     def run(self):
-        total_fitness_per_generation = []
+        best_fitness_per_generation = []
         for n in range(1, self.generations() + 1):
             print("Generation", n)
             # Selection
@@ -75,24 +75,29 @@ class GeneticAlgorithm(ABC):
             # Calculate fitness
             self.calculate_fitness()
 
-            total_fitness = sum(map(lambda individual: individual[2], self.individuals))
-            total_fitness_per_generation.append(total_fitness)
+            best_individual = sorted(
+                self.individuals,
+                key=lambda individual: individual[2],
+                reverse=True,
+            )[0]
+            best_fitness = best_individual[2]
+            best_fitness_per_generation.append(best_fitness)
 
         x = range(1, self.generations() + 1)
-        y = total_fitness_per_generation
+        y = best_fitness_per_generation
 
         plt.plot(x, y)
         plt.title(
             f"Genetic Algorithm\nGenerations: {self.generations()},Population: {self.population_size()}"
         )
         plt.xlabel("Generation")
-        plt.ylabel("Fitness")
+        plt.ylabel("f(x)")
         # plt.show()
         plt.savefig(f"plots/{int(time.time())}.png")
         plt.close()
 
         self.individuals.sort(key=lambda d: d[2], reverse=True)
-        for individual in self.individuals:
+        for individual in self.individuals[:10]:
             print(individual)
         print("Best individual", self.individuals[0])
 

@@ -1,5 +1,11 @@
 # Genetic Algorithm
 
+## Usage
+
+### Examples
+
+- [example_sum.py](./example_sum.py)
+
 ## Development
 
 ### Create venv in venv directory

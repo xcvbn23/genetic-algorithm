@@ -1,7 +1,7 @@
 from genetic_algorithm import REPLACEMENT_METHOD, GeneticAlgorithm
 
 
-class MyGeneticAlgorithm(GeneticAlgorithm):
+class MaximiseSumGeneticAlgorithm(GeneticAlgorithm):
     def gene_definition(self):
         return [(int, 0, 1), (int, -5, 10), (float, 10.5, 75.5)]
 
@@ -9,7 +9,7 @@ class MyGeneticAlgorithm(GeneticAlgorithm):
         return sum(gene)
 
     def generations(self):
-        return 1000
+        return 500
 
     def mutation_rate(self) -> float:
         return 0.05
@@ -18,12 +18,12 @@ class MyGeneticAlgorithm(GeneticAlgorithm):
         return 2
 
     def population_size(self):
-        return 1000
+        return 10
 
     def replacement_method(self) -> REPLACEMENT_METHOD:
         return REPLACEMENT_METHOD.WEAK_PARENT
 
 
 if __name__ == "__main__":
-    genetic_algorithm = MyGeneticAlgorithm()
+    genetic_algorithm = MaximiseSumGeneticAlgorithm()
     genetic_algorithm.run()

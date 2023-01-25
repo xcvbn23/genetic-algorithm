@@ -1,2 +1,5 @@
 matplotlib==3.6.3
 pytest==7.2.1
+## example
+### wifi network optimisation
+pygame==2.1.3.dev8

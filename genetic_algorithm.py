@@ -97,9 +97,8 @@ class GeneticAlgorithm(ABC):
         plt.close()
 
         self.individuals.sort(key=lambda d: d[2], reverse=True)
-        for individual in self.individuals[:10]:
-            print(individual)
-        print("Best individual", self.individuals[0])
+
+        self.on_complete(self.individuals)
 
     def perform_crossover(self, parents: list) -> list:
         children = []
@@ -202,6 +201,11 @@ class GeneticAlgorithm(ABC):
     @abstractmethod
     def mutation_rate(self) -> float:
         pass
+
+    def on_complete(self, best_individuals: list) -> None:
+        for individual in self.individuals[:10]:
+            print(individual)
+        print("Best individual", best_individuals[0])
 
     @property
     @abstractmethod

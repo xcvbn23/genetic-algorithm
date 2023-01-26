@@ -1,10 +1,17 @@
 # Genetic Algorithm
 
-## Usage
-
 ### Examples
 
-- [example_sum.py](./example_sum.py)
+- [sum](./examples/sum.py)
+- [wifi_optimisation](./examples/wifi_optimisation.py)
+
+#### Running examples
+
+    python -m examples.<EXAMPLE_NAME>
+
+For example;
+
+    python -m example.sum
 
 ## Development
 

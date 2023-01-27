@@ -87,11 +87,16 @@ class GeneticAlgorithm(ABC):
         y = best_fitness_per_generation
 
         plt.plot(x, y)
-        plt.title(
-            f"Genetic Algorithm\nGenerations: {self.generations()},Population: {self.population_size()}"
-        )
+        plt.title(f"Genetic Algorithm")
         plt.xlabel("Generation")
         plt.ylabel("f(x)")
+        plt.gcf().text(
+            0.333,
+            0.01,
+            f"generations: {self.generations()}, population: {self.population_size()}, parents: {self.num_of_parents()}",
+            fontsize=9,
+        )
+        plt.tight_layout()
         # plt.show()
         plt.savefig(f"plots/{int(time.time())}.png")
         plt.close()

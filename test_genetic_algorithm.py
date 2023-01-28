@@ -1,11 +1,18 @@
 import pytest
 
-from genetic_algorithm import REPLACEMENT_METHOD, GeneticAlgorithm
+from genetic_algorithm import (
+    REPLACEMENT_METHOD,
+    CrossoverStrategies,
+    GeneticAlgorithm,
+)
 
 
 @pytest.fixture
 def genetic_algorithm(random_seed):
     class MyGeneticAlgorithm(GeneticAlgorithm):
+        def crossover_strategy(self):
+            return CrossoverStrategies.single_point
+
         def gene_definition(self):
             return [(int, 0, 1), (int, -5, 10), (float, 10.5, 75.5)]
 

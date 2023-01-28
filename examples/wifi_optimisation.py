@@ -7,13 +7,20 @@ from examples.wifi_optimisation_utils import (
     freespace_propagation_loss,
     segment_intersect,
 )
-from genetic_algorithm import REPLACEMENT_METHOD, GeneticAlgorithm
+from genetic_algorithm import (
+    REPLACEMENT_METHOD,
+    CrossoverStrategies,
+    GeneticAlgorithm,
+)
 
 users = [(0, 50), (100, 50)]
 walls = [[(75, 0), (75, 75)]]
 
 
 class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
+    def crossover_strategy(self):
+        return CrossoverStrategies.single_point
+
     def gene_definition(self):
         return [(int, 1, 1), (float, 0, 100), (float, 0, 100)]
 

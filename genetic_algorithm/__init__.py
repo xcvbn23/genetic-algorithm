@@ -7,19 +7,39 @@ import time
 import matplotlib.pyplot as plt
 
 
+class CrossoverStrategies:
+    @staticmethod
+    def single_point(gene_parent_1, gene_parent_2):
+        crossover_point = random.randint(0, len(gene_parent_1))
+
+        gene_child_1 = gene_parent_1[:crossover_point] + gene_parent_2[crossover_point:]
+        gene_child_2 = gene_parent_2[:crossover_point] + gene_parent_1[crossover_point:]
+
+        return gene_child_1, gene_child_2
+
+    @staticmethod
+    def double_point(gene_parent_1, gene_parent_2):
+        crossover_point_1 = random.randint(0, len(gene_parent_1))
+        crossover_point_2 = random.randint(crossover_point_1, len(gene_parent_1))
+
+        gene_child_1 = (
+            gene_parent_1[:crossover_point_1]
+            + gene_parent_2[crossover_point_1:crossover_point_2]
+            + gene_parent_1[crossover_point_2:]
+        )
+        gene_child_2 = (
+            gene_parent_2[:crossover_point_1]
+            + gene_parent_1[crossover_point_1:crossover_point_2]
+            + gene_parent_2[crossover_point_2:]
+        )
+
+        return gene_child_1, gene_child_2
+
+
 class REPLACEMENT_METHOD(Enum):
     RANDOM = 0
     WEAK_PARENT = 1
     BOTH_PARENTS = 2
-
-
-def single_point_crossover(gene_parent_1, gene_parent_2):
-    crossover_point = random.randint(0, len(gene_parent_1))
-
-    gene_child_1 = gene_parent_1[:crossover_point] + gene_parent_2[crossover_point:]
-    gene_child_2 = gene_parent_2[:crossover_point] + gene_parent_1[crossover_point:]
-
-    return gene_child_1, gene_child_2
 
 
 def tournament_selection(population) -> tuple:
@@ -91,9 +111,9 @@ class GeneticAlgorithm(ABC):
         plt.xlabel("Generation")
         plt.ylabel("f(x)")
         plt.gcf().text(
-            0.333,
+            0.15,
             0.01,
-            f"generations: {self.generations()}, population: {self.population_size()}, parents: {self.num_of_parents()}",
+            f"generations: {self.generations()}, population: {self.population_size()}, parents: {self.num_of_parents()}, crossover: {self.crossover_strategy.__name__})",
             fontsize=9,
         )
         plt.tight_layout()
@@ -114,7 +134,8 @@ class GeneticAlgorithm(ABC):
             gene_parent_2 = self.individuals[i + 1]
             idx_2, gene_parent_2, _ = gene_parent_2
 
-            gene_child_1, gene_child_2 = single_point_crossover(
+            crossover_strategy = self.crossover_strategy()
+            gene_child_1, gene_child_2 = crossover_strategy(
                 gene_parent_1, gene_parent_2
             )
 
@@ -181,6 +202,11 @@ class GeneticAlgorithm(ABC):
             parents.append(parent_2)
 
         return parents
+
+    @property
+    @abstractmethod
+    def crossover_strategy(self):
+        pass
 
     @property
     @abstractmethod

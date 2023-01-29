@@ -2,6 +2,7 @@
 
 ### Examples
 
+- [six_hump_camelback](./examples/six_hump_camelback.py)
 - [sum](./examples/sum.py)
 - [wifi_optimisation](./examples/wifi_optimisation.py)
 

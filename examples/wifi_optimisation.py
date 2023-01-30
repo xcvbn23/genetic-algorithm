@@ -1,20 +1,15 @@
 import math
 import statistics
 import sys
+from datetime import datetime
 
-import pygame
+import matplotlib.pyplot as plt
 
 from examples.wifi_optimisation_utils import (
-    FreeSpacePathLossModel,
     ITUP1238IndoorPropagationModel,
-    LogDistancePathLossModel,
     segment_intersect,
 )
-from genetic_algorithm import (
-    REPLACEMENT_METHOD,
-    CrossoverStrategies,
-    GeneticAlgorithm,
-)
+from genetic_algorithm import REPLACEMENT_METHOD, CrossoverStrategies, GeneticAlgorithm
 
 users = [(10, 50), (90, 50)]
 walls = []
@@ -26,7 +21,11 @@ receiver_gain = 1  # dBi
 
 propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
 
-# sys.exit(0)
+
+w, h = 30, 5
+users = [(5, 2.5), (20, 2.5)]
+walls = []
+routers = []
 
 
 class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
@@ -37,31 +36,38 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         return CrossoverStrategies.single_point
 
     def gene_definition(self):
-        return [(int, 1, 1), (float, 0, 100), (float, 0, 100)]
+        max_routers = 1
+        definition = [(int, max_routers, max_routers)]
+        definition += max_routers * [
+            (float, 0, w),
+            (float, 0, h),
+        ]
+        return definition
+
+    def determine_received_power(self, router, user) -> float:
+        distance = math.dist(user, router)
+        path_loss = propagation_model.run(distance)
+        for wall in walls:
+            if segment_intersect(wall, [router, user]):
+                path_loss += 3
+
+        return transmitter_power + transmitter_gain - path_loss + receiver_gain
 
     def fitness_func(self, gene: list) -> float:
         received_powers = []
         router = gene[1:]
 
         for user in users:
-            distance = math.dist(user, router)
-            path_loss = propagation_model.run(distance)
-            for wall in walls:
-                if segment_intersect(wall, [router, user]):
-                    path_loss += 3
-
-            received_power = (
-                transmitter_power + transmitter_gain - path_loss + receiver_gain
-            )
+            received_power = self.determine_received_power(router, user)
             received_powers.append(received_power)
 
-        total_link_budget = sum(received_powers)
+        total_received_power = sum(received_powers)
         received_power_variance = statistics.variance(received_powers)
 
-        return -received_power_variance + total_link_budget
+        return -received_power_variance + total_received_power
 
     def generations(self):
-        return 500
+        return 300
 
     def mutation_rate(self) -> float:
         return 0.05
@@ -73,64 +79,14 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         super().on_complete(best_individuals)
         _, best_gene, _ = best_individuals[0]
         [_, router_x, router_y] = best_gene
-
-        pygame.init()
-        pygame.display.set_caption("Wifi Optimisation Algorithm")
-        display_win = pygame.display.set_mode([200, 200])
-        win = pygame.Surface((100, 100))
-
-        WHITE = (200, 200, 200)
-        GREY = (50, 50, 50)
-        BLACK = (0, 0, 0)
-        RED = (200, 0, 0)
-        GREEN = (0, 255, 0)
-        TAN = (240, 171, 15)
-        YELLOW = (255, 255, 0)
-
-        class Unit(pygame.sprite.Sprite):
-            def __init__(self, x: int, y: int, colour=YELLOW, size=5):
-                pygame.sprite.Sprite.__init__(self)
-                self.colour = colour
-                self.image = pygame.Surface((size, size), pygame.SRCALPHA)
-                self.rect = self.image.get_rect()
-                self.rect.center = (x, y)
-                self.size = size
-                self.seen = False
-                pygame.draw.circle(
-                    self.image, colour, (self.size // 2, self.size // 2), self.size // 2
-                )
-
-        win.fill(BLACK)
-
-        user_sprites = pygame.sprite.Group()
-        for user_location in users:
-            user_sprites.add(Unit(*user_location, GREEN))
-        user_sprites.update()
-        user_sprites.draw(win)
-
-        router_sprite = pygame.sprite.GroupSingle()
-        router = Unit(0, 0)
-        router_sprite.add(router)
-        router.rect.x = router_x
-        router.rect.y = router_y
-        router_sprite.draw(win)
-
-        for wall in walls:
-            pygame.draw.line(win, TAN, *wall)
-
         for user in users:
-            for wall in walls:
-                router_user = [(round(router_x), round(router_y)), user]
-                pygame.draw.line(win, RED, *router_user)
-
-        scaled_win = pygame.transform.smoothscale(win, display_win.get_size())
-        display_win.blit(scaled_win, (0, 0))
-        pygame.display.flip()
-
-        pygame.image.save(
-            display_win, "./examples/wifi_optimisation_screenshots/plan.png"
-        )
-        pygame.quit()
+            print(
+                "user",
+                user,
+                "P_Rx",
+                self.determine_received_power((router_x, router_y), user),
+            )
+        self.plot(users, walls, [(router_x, router_y)])
 
     def population_size(self):
         return 100
@@ -138,7 +94,53 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
     def replacement_method(self) -> REPLACEMENT_METHOD:
         return REPLACEMENT_METHOD.WEAK_PARENT
 
+    def plot(self, users: list, walls: list, routers: list):
+        now = datetime.now()
+
+        fig, ax = plt.subplots()
+        ax.set_xlim([0, w])
+        ax.set_ylim([0, h])
+
+        for user_location in users:
+            x, y = user_location
+            ax.scatter(x, y, c="b")
+            ax.annotate(
+                f"user {(round(x, 2), round(y, 2))}",
+                user_location,
+                xytext=(x, y + 0.15),
+                ha="center",
+            )
+
+        for router_location in routers:
+            x, y = router_location
+            ax.scatter(*router_location, c="r")
+            ax.annotate(
+                f"router {(round(x, 2), round(y, 2))}",
+                router_location,
+                xytext=(x, y + 0.15),
+                ha="center",
+            )
+
+        for wall in walls:
+            x, y = wall
+            ax.plot(x, y, "r-")
+
+        # for user in users:
+        #     for wall in walls:
+        #         for router in routers:
+        #             x, y = router
+        #             router_user = [(round(x), round(y)), user]
+        #             pygame.draw.line(win, RED, *router_user)
+
+        timestamp = now.strftime("%Y%m%d%H%M%S")
+
+        plt.savefig(f"./examples/wifi_optimisation_screenshots/{timestamp}.png")
+
 
 if __name__ == "__main__":
     genetic_algorithm = WifiOptimisationGeneticAlgorithm()
-    genetic_algorithm.run()
+    options = sys.argv[1:]
+    if len(options) > 0:
+        genetic_algorithm.plot(users, walls, routers)
+    else:
+        genetic_algorithm.run()

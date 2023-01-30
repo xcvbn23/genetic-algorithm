@@ -1,10 +1,13 @@
 import math
 import statistics
+import sys
 
 import pygame
 
 from examples.wifi_optimisation_utils import (
-    freespace_propagation_loss,
+    FreeSpacePathLossModel,
+    ITUP1238IndoorPropagationModel,
+    LogDistancePathLossModel,
     segment_intersect,
 )
 from genetic_algorithm import (
@@ -13,11 +16,23 @@ from genetic_algorithm import (
     GeneticAlgorithm,
 )
 
-users = [(0, 50), (100, 50)]
-walls = [[(75, 0), (75, 75)]]
+users = [(10, 50), (90, 50)]
+walls = []
+
+operating_frequency = 5.180  # GHz
+transmitter_power = 23  # dBm
+transmitter_gain = 3.5  # dBi
+receiver_gain = 1  # dBi
+
+propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
+
+# sys.exit(0)
 
 
 class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
+    def __init__(self) -> list:
+        super().__init__()
+
     def crossover_strategy(self):
         return CrossoverStrategies.single_point
 
@@ -25,25 +40,25 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         return [(int, 1, 1), (float, 0, 100), (float, 0, 100)]
 
     def fitness_func(self, gene: list) -> float:
-        path_losses = []
-
+        received_powers = []
         router = gene[1:]
 
         for user in users:
             distance = math.dist(user, router)
-            path_loss = freespace_propagation_loss(distance, 2.412 * math.pow(10, 9))
+            path_loss = propagation_model.run(distance)
             for wall in walls:
                 if segment_intersect(wall, [router, user]):
                     path_loss += 3
 
-            if path_loss > 85:
-                return -999
-            path_losses.append(path_loss)
+            received_power = (
+                transmitter_power + transmitter_gain - path_loss + receiver_gain
+            )
+            received_powers.append(received_power)
 
-        total_path_loss = sum(path_losses)
-        path_loss_variance = statistics.variance(path_losses)
+        total_link_budget = sum(received_powers)
+        received_power_variance = statistics.variance(received_powers)
 
-        return -path_loss_variance - total_path_loss
+        return -received_power_variance + total_link_budget
 
     def generations(self):
         return 500
@@ -91,7 +106,6 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         for user_location in users:
             user_sprites.add(Unit(*user_location, GREEN))
         user_sprites.update()
-        user_sprites.draw(win)
         user_sprites.draw(win)
 
         router_sprite = pygame.sprite.GroupSingle()

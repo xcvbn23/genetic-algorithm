@@ -37,9 +37,9 @@ class CrossoverStrategies:
 
 
 class REPLACEMENT_METHOD(Enum):
-    RANDOM = 0
-    WEAK_PARENT = 1
-    BOTH_PARENTS = 2
+    RANDOM = "random"
+    WEAK_PARENT = "weak_parent"
+    BOTH_PARENTS = "both_parents"
 
 
 def tournament_selection(population) -> tuple:
@@ -113,10 +113,11 @@ class GeneticAlgorithm(ABC):
         plt.gcf().text(
             0.15,
             0.01,
-            f"generations: {self.generations()}, population: {self.population_size()}, parents: {self.num_of_parents()}, crossover: {self.crossover_strategy.__name__})",
+            f"generations: {self.generations()}, population: {self.population_size()}, parents: {self.num_of_parents()},crossover: {self.crossover_strategy().__name__},\nmutation rate: {self.mutation_rate()}, selection: tournament, replacement: {self.replacement_method().value}",
             fontsize=9,
         )
         plt.tight_layout()
+        plt.subplots_adjust(bottom=0.16667)
         # plt.show()
         plt.savefig(f"plots/{int(time.time())}.png")
         plt.close()

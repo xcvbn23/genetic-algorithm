@@ -76,14 +76,13 @@ class ITUP1238IndoorPropagationModel(FreeSpacePathLossModel):
 
     def run(self, distance: float) -> float:
         distance += 0.0001
-        reference_distance = 1  # (m)
-        reference_distance_path_loss = super().run(reference_distance)
+
+        alpha = 1.46
+        beta = 34.62
+        gamma = 2.03
 
         return (
-            reference_distance_path_loss
-            + (
-                self.distance_power_loss_coefficient
-                * math.log10(distance / reference_distance)
-            )
-            + (self.floor_penetration_loss_factor * self.num_floors)
-        )  # (dB)
+            10 * alpha * math.log10(distance)
+            + beta
+            + 10 * gamma * math.log10(self.frequency)
+        )

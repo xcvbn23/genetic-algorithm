@@ -11,21 +11,55 @@ from examples.wifi_optimisation_utils import (
 )
 from genetic_algorithm import REPLACEMENT_METHOD, CrossoverStrategies, GeneticAlgorithm
 
-users = [(10, 50), (90, 50)]
-walls = []
 
 operating_frequency = 5.180  # GHz
 transmitter_power = 23  # dBm
-transmitter_gain = 3.5  # dBi
+transmitter_gain = 2  # dBi
 receiver_gain = 1  # dBi
 
 propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
 
 
-w, h = 30, 5
-users = [(5, 2.5), (20, 2.5)]
-walls = []
+class WALL_TYPE:
+    CONCRETE = 44.769
+    LIME_BRICK = 7.799
+    DRY_WALL = 10.114
+    CHIP_BOARD = 0.838
+
+
+w, h = 20, 10
+users = [(3, 3), (16, 3), (3, 9), (6, 9), (11, 9), (13, 9), (18, 9)]
+walls = [
+    [(5, 1), (5, 6), WALL_TYPE.CHIP_BOARD],
+    [(10, 1), (10, 6), WALL_TYPE.CHIP_BOARD],
+    [(15, 1), (15, 6), WALL_TYPE.CHIP_BOARD],
+    [(2, 8), (2, 10), WALL_TYPE.DRY_WALL],
+    [(2, 8), (3, 8), WALL_TYPE.CHIP_BOARD],
+    [(3, 8), (4, 8), WALL_TYPE.DRY_WALL],
+    [(4, 8), (4, 10), WALL_TYPE.DRY_WALL],
+    [(4, 8), (5, 8), WALL_TYPE.CHIP_BOARD],
+    [(5, 8), (7, 8), WALL_TYPE.DRY_WALL],
+    [(7, 8), (7, 10), WALL_TYPE.DRY_WALL],
+    [(10, 8), (10, 10), WALL_TYPE.DRY_WALL],
+    [(10, 8), (11, 8), WALL_TYPE.CHIP_BOARD],
+    [(11, 8), (15, 8), WALL_TYPE.DRY_WALL],
+    [(12, 8), (13, 8), WALL_TYPE.CHIP_BOARD],
+    [(13, 8), (15, 8), WALL_TYPE.DRY_WALL],
+    [(12, 8), (12, 10), WALL_TYPE.DRY_WALL],
+    [(15, 8), (15, 10), WALL_TYPE.DRY_WALL],
+    [(15, 8), (16, 8), WALL_TYPE.CHIP_BOARD],
+    [(16, 8), (20, 8), WALL_TYPE.DRY_WALL],
+    [(4, 4), (6, 4), WALL_TYPE.CHIP_BOARD],
+    [(14, 4), (16, 4), WALL_TYPE.CHIP_BOARD],
+]
+# routers = [(3.07, 4.65), (17.3, 6.47)]
 routers = []
+max_routers = 2
+
+
+def split(list_a, chunk_size):
+    for i in range(0, len(list_a), chunk_size):
+        yield list_a[i : i + chunk_size]
 
 
 class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
@@ -36,8 +70,7 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         return CrossoverStrategies.single_point
 
     def gene_definition(self):
-        max_routers = 1
-        definition = [(int, max_routers, max_routers)]
+        definition = [(int, 1, max_routers)]
         definition += max_routers * [
             (float, 0, w),
             (float, 0, h),
@@ -48,18 +81,24 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
         distance = math.dist(user, router)
         path_loss = propagation_model.run(distance)
         for wall in walls:
-            if segment_intersect(wall, [router, user]):
-                path_loss += 3
+            point_1, point_2, wall_type = wall
+            if segment_intersect([point_1, point_2], [router, user]):
+                path_loss += wall_type
 
         return transmitter_power + transmitter_gain - path_loss + receiver_gain
 
     def fitness_func(self, gene: list) -> float:
         received_powers = []
-        router = gene[1:]
-
-        for user in users:
-            received_power = self.determine_received_power(router, user)
-            received_powers.append(received_power)
+        no_of_routers = gene[0]
+        routers = gene[1:]
+        routers = list(split(routers, 2))
+        routers = routers[: 2 * no_of_routers]
+        for router in routers:
+            for user in users:
+                received_power = self.determine_received_power(router, user)
+                if received_power < -65:
+                    return -999
+                received_powers.append(received_power)
 
         total_received_power = sum(received_powers)
         received_power_variance = statistics.variance(received_powers)
@@ -78,15 +117,21 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
     def on_complete(self, best_individuals: list) -> None:
         super().on_complete(best_individuals)
         _, best_gene, _ = best_individuals[0]
-        [_, router_x, router_y] = best_gene
-        for user in users:
-            print(
-                "user",
-                user,
-                "P_Rx",
-                self.determine_received_power((router_x, router_y), user),
-            )
-        self.plot(users, walls, [(router_x, router_y)])
+        no_of_routers = best_gene[0]
+        routers = best_gene[1:]
+        routers = list(split(routers, 2))
+        routers = routers[: 2 * no_of_routers]
+        for router in routers:
+            for user in users:
+                print(
+                    "router",
+                    router,
+                    "user",
+                    user,
+                    "P_Rx",
+                    self.determine_received_power(router, user),
+                )
+        self.plot(users, walls, routers)
 
     def population_size(self):
         return 100
@@ -117,20 +162,25 @@ class WifiOptimisationGeneticAlgorithm(GeneticAlgorithm):
             ax.annotate(
                 f"router {(round(x, 2), round(y, 2))}",
                 router_location,
-                xytext=(x, y + 0.15),
+                xytext=(x, y + 1.15),
                 ha="center",
             )
 
         for wall in walls:
-            x, y = wall
-            ax.plot(x, y, "r-")
+            point1, point2, wall_type = wall
 
-        # for user in users:
-        #     for wall in walls:
-        #         for router in routers:
-        #             x, y = router
-        #             router_user = [(round(x), round(y)), user]
-        #             pygame.draw.line(win, RED, *router_user)
+            x_values = [point1[0], point2[0]]
+            y_values = [point1[1], point2[1]]
+
+            if wall_type == WALL_TYPE.CONCRETE:
+                wall_type = "r-"
+            elif wall_type == WALL_TYPE.DRY_WALL:
+                wall_type = "b-"
+            elif wall_type == WALL_TYPE.CHIP_BOARD:
+                wall_type = "g-"
+            else:
+                wall_type = "o-"
+            ax.plot(x_values, y_values, wall_type)
 
         timestamp = now.strftime("%Y%m%d%H%M%S")
 

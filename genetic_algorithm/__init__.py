@@ -1,5 +1,6 @@
 import logging
 import random
+import time
 import uuid
 from abc import abstractmethod, ABC
 from enum import Enum, auto
@@ -164,6 +165,7 @@ class GeneticAlgorithm(ABC):
         pass
 
     def run(self):
+        start = time.time()
         fitness_graph = []
 
         self._initialise_population()
@@ -187,6 +189,9 @@ class GeneticAlgorithm(ABC):
             )[0]
             best_fitness = best_gene[2]
             fitness_graph.append([generation, best_fitness])
+
+        end = time.time()
+        logger.info("Took %d seconds", end - start)
 
         self.population.sort(key=lambda d: d[2], reverse=True)
 

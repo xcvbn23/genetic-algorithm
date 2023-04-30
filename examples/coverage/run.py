@@ -1,4 +1,4 @@
-from examples.coveraged.plan import Plan
+from examples.coverage.plan import Plan
 from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMethod
 
 # Problem Parameters

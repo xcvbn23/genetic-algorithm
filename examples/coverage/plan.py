@@ -47,9 +47,6 @@ class Plan:
         return 3 * coverage + 0.5 * signal_qualities + efficiency
 
     def plot(self, name: str = None):
-        plt.xlabel("Distance in meters")
-        plt.ylabel("Distance in meters")
-
         fig, ax = plt.subplots()
         ax.set_xlim([0, self.w])
         ax.set_ylim([0, self.h])
@@ -77,5 +74,10 @@ class Plan:
                 ha="center",
             )
 
-        plt.savefig(name and name or "plot.png")
+        plt.title("Plan")
+        plt.xlabel("x coordinates in meters")
+        plt.ylabel("y coordinates in meters")
+
+        plt.savefig(name and name or "plan.png")
+
 

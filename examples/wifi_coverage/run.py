@@ -1,12 +1,23 @@
 from examples.wifi_coverage.plan import Plan
 from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMethod
 
-# # Scenario 1.1
+# # # Scenario 1.1
+# # Problem Parameters
+# TARGETS = [(5, 2.5), (20, 2.5)]
+# # Router Configuration
+# MAX_ROUTERS = 2
+# MAX_ROUTER_POWER = 3  # dBm
+# ROUTER_ANTENNA_GAIN = 3  # dBi
+# USER_ANTENNA_GAIN = 1  # dBi
+# DIMENSIONS = 30, 5
+# OPERATING_FREQUENCY = 5.180
+
+# # Scenario 1.2
 # Problem Parameters
 TARGETS = [(5, 2.5), (20, 2.5)]
 # Router Configuration
 MAX_ROUTERS = 2
-MAX_ROUTER_POWER = 3  # dBm
+MAX_ROUTER_POWER = 10  # dBm
 ROUTER_ANTENNA_GAIN = 3  # dBi
 USER_ANTENNA_GAIN = 1  # dBi
 DIMENSIONS = 30, 5

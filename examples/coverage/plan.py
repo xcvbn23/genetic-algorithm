@@ -41,7 +41,6 @@ class Plan:
 
         coverage = len(connected) / len(self.targets)
         signal_qualities = sum(signal_qualities) and 1 / sum(signal_qualities) or 0
-
         efficiency = self.max_sensors / self.no_of_sensors
 
         return 3 * coverage + 0.5 * signal_qualities + efficiency

@@ -1,4 +1,4 @@
-from examples.wifi_coverage.plan import Plan
+from examples.wifi_coverage.plan import Plan, WALL_TYPE
 from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMethod
 
 # # # Scenario 1.1
@@ -12,7 +12,18 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
 
-# # Scenario 1.2
+# # # Scenario 1.2
+# # Problem Parameters
+# TARGETS = [(5, 2.5), (20, 2.5)]
+# # Router Configuration
+# MAX_ROUTERS = 2
+# MAX_ROUTER_POWER = 10  # dBm
+# ROUTER_ANTENNA_GAIN = 3  # dBi
+# USER_ANTENNA_GAIN = 1  # dBi
+# DIMENSIONS = 30, 5
+# OPERATING_FREQUENCY = 5.180
+
+# # Scenario 1.3
 # Problem Parameters
 TARGETS = [(5, 2.5), (20, 2.5)]
 # Router Configuration
@@ -22,11 +33,7 @@ ROUTER_ANTENNA_GAIN = 3  # dBi
 USER_ANTENNA_GAIN = 1  # dBi
 DIMENSIONS = 30, 5
 OPERATING_FREQUENCY = 5.180
-
-
-def split(list_a, chunk_size):
-    for i in range(0, len(list_a), chunk_size):
-        yield list_a[i: i + chunk_size]
+WALLS = [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]]
 
 
 def _gene_space() -> list:
@@ -66,6 +73,7 @@ class WiFiCoverageGeneticAlgorithm(GeneticAlgorithm):
             OPERATING_FREQUENCY,
             ROUTER_ANTENNA_GAIN,
             USER_ANTENNA_GAIN,
+            WALLS,
         )
         return plan.evaluate()
 
@@ -85,5 +93,6 @@ if __name__ == "__main__":
         OPERATING_FREQUENCY,
         ROUTER_ANTENNA_GAIN,
         USER_ANTENNA_GAIN,
+        WALLS,
     )
     plan.plot()

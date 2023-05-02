@@ -3,12 +3,18 @@ import statistics
 
 import matplotlib.pyplot as plt
 
-from examples.wifi_coverage.utils import ITUP1238IndoorPropagationModel
+from examples.wifi_coverage.utils import (
+    ITUP1238IndoorPropagationModel,
+    segment_intersect,
+    split,
+)
 
 
-def split(list_a, chunk_size):
-    for i in range(0, len(list_a), chunk_size):
-        yield list_a[i: i + chunk_size]
+class WALL_TYPE:
+    CONCRETE = 44.769
+    LIME_BRICK = 7.799
+    DRY_WALL = 10.114
+    CHIP_BOARD = 0.838
 
 
 class Plan:
@@ -21,6 +27,7 @@ class Plan:
             operating_frequency: float,
             router_antenna_gain: float,
             user_antenna_gain: float,
+            walls=None,
     ):
         self.max_routers = max_sensors
 
@@ -36,6 +43,8 @@ class Plan:
         self.users = users
 
         self.w, self.h = dimensions
+
+        self.walls = walls or []
 
         self.propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
 
@@ -86,6 +95,10 @@ class Plan:
 
         distance = math.dist(router, user)
         path_loss = self.propagation_model.run(distance)
+        for wall in self.walls:
+            point_1, point_2, wall_type = wall
+            if segment_intersect([point_1, point_2], [router, user]):
+                path_loss += wall_type
         received_power = (
                 transmit_power
                 + self.router_antenna_gain
@@ -105,8 +118,8 @@ class Plan:
         connected_registry = self.connect_users()
         for user_id, connections in connected_registry.items():
             router, rssi = connections
-            user = user_id.strip('()')
-            user = user.split(',')
+            user = user_id.strip("()")
+            user = user.split(",")
             x, y = map(float, user)
             ax.scatter(x, y, c="b")
             ax.annotate(
@@ -122,9 +135,25 @@ class Plan:
             ax.annotate(
                 f"router {(round(x, 2), round(y, 2))}",
                 (x, y),
-                xytext=(x, y + - 0.5 * label_scale),
+                xytext=(x, y + -0.5 * label_scale),
                 ha="center",
             )
+
+        for wall in self.walls:
+            point1, point2, wall_type = wall
+
+            x_values = [point1[0], point2[0]]
+            y_values = [point1[1], point2[1]]
+
+            if wall_type == WALL_TYPE.CONCRETE:
+                wall_type = "r-"
+            elif wall_type == WALL_TYPE.DRY_WALL:
+                wall_type = "b-"
+            elif wall_type == WALL_TYPE.CHIP_BOARD:
+                wall_type = "g-"
+            else:
+                wall_type = "o-"
+            ax.plot(x_values, y_values, wall_type)
 
         plt.title("Plan", loc="left")
         plt.title(f"MAX_ROUTERS {self.max_routers}", loc="right")

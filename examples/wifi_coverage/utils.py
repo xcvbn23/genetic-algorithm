@@ -1,5 +1,18 @@
 import math
 
+from shapely import LineString
+
+
+def segment_intersect(line1, line2):
+    line = LineString(line1)
+    other = LineString(line2)
+    return line.intersects(other)
+
+
+def split(list_a, chunk_size):
+    for i in range(0, len(list_a), chunk_size):
+        yield list_a[i: i + chunk_size]
+
 
 class PropagationModel:
     def __init__(self, frequency):

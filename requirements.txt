@@ -1,4 +1,6 @@
+adjustText==0.8
 enlighten==1.11.2
 matplotlib==3.7.1
+shapely==2.0.1
 # dev
 pytest==7.1.2

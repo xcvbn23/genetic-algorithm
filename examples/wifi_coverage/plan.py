@@ -2,6 +2,7 @@ import math
 import statistics
 
 import matplotlib.pyplot as plt
+from adjustText import adjust_text
 
 from examples.wifi_coverage.utils import (
     ITUP1238IndoorPropagationModel,
@@ -12,8 +13,8 @@ from examples.wifi_coverage.utils import (
 
 class WALL_TYPE:
     CONCRETE = 44.769
-    LIME_BRICK = 7.799
     DRY_WALL = 10.114
+    LIME_BRICK = 7.799
     CHIP_BOARD = 0.838
 
 
@@ -113,31 +114,38 @@ class Plan:
         ax.set_ylim([0, self.h])
         ax.set_aspect("equal")
 
-        label_scale = 3.5
-
         connected_registry = self.connect_users()
+
+        texts = []
         for user_id, connections in connected_registry.items():
             router, rssi = connections
             user = user_id.strip("()")
             user = user.split(",")
             x, y = map(float, user)
             ax.scatter(x, y, c="b")
-            ax.annotate(
-                f"user {(round(x, 2), round(y, 2), round(rssi, 2))}",
-                (x, y),
-                xytext=(x, y + 0.15 * label_scale),
-                ha="center",
+            texts.append(
+                plt.text(
+                    x,
+                    y,
+                    f"user {(round(x, 2), round(y, 2), round(rssi, 2))}",
+                    ha="center",
+                    va="center",
+                )
             )
 
         for router in self.routers:
             range, x, y = router
             ax.scatter(x, y, c="r")
-            ax.annotate(
-                f"router {(round(x, 2), round(y, 2))}",
-                (x, y),
-                xytext=(x, y + -0.5 * label_scale),
-                ha="center",
+            texts.append(
+                plt.text(
+                    x,
+                    y,
+                    f"router {(round(x, 2), round(y, 2))}",
+                    ha="center",
+                )
             )
+
+        adjust_text(texts)
 
         for wall in self.walls:
             point1, point2, wall_type = wall
@@ -161,3 +169,26 @@ class Plan:
         plt.ylabel("y coordinates in meters")
 
         plt.savefig(name and name or "plan.png")
+
+
+if __name__ == "__main__":
+    plan = Plan(
+        [
+            1,
+            10,
+            12.500111390936478,
+            2.5044413549436424,
+            10,
+            7.802416841537527,
+            4.517764690467797,
+        ],
+        [(5, 2.5), (20, 2.5)],
+        (30, 5),
+        2,
+        5.180,
+        3,
+        1,
+        [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]],
+    )
+    plan.evaluate()
+    plan.plot("plot-analysis-1")

@@ -23,17 +23,68 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
 
-# # Scenario 1.3
+# # # Scenario 1.3
+# # Problem Parameters
+# TARGETS = [(5, 2.5), (20, 2.5)]
+# # Router Configuration
+# MAX_ROUTERS = 2
+# MAX_ROUTER_POWER = 10  # dBm
+# ROUTER_ANTENNA_GAIN = 3  # dBi
+# USER_ANTENNA_GAIN = 1  # dBi
+# DIMENSIONS = 30, 5
+# OPERATING_FREQUENCY = 5.180
+# WALLS = [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]]
+
+# # # Scenario 2.1
+# # Problem Parameters
+# TARGETS = [(3, 6), (7, 1)]
+# # Router Configuration
+# MAX_ROUTERS = 2
+# MAX_ROUTER_POWER = 10  # dBm
+# ROUTER_ANTENNA_GAIN = 3  # dBi
+# USER_ANTENNA_GAIN = 1  # dBi
+# DIMENSIONS = 8, 7
+# OPERATING_FREQUENCY = 5.180
+# WALLS = [
+#     [(1, 5), (2, 5), WALL_TYPE.CHIP_BOARD],
+#     [(0, 5), (1, 5), WALL_TYPE.CONCRETE],
+#     #
+#     [(3, 4), (6, 4), WALL_TYPE.CONCRETE],
+#     [(2, 4), (3, 4), WALL_TYPE.CHIP_BOARD],
+#     #
+#     [(3, 4), (6, 4), WALL_TYPE.CONCRETE],
+#     [(6, 4), (6, 7), WALL_TYPE.CONCRETE],
+#     [(2, 4), (2, 7), WALL_TYPE.CONCRETE],
+#     #
+#     [(5, 0), (5, 3), WALL_TYPE.DRY_WALL],
+#     [(2, 0), (2, 3), WALL_TYPE.DRY_WALL],
+# ]
+
+
+# # Scenario 2.2
 # Problem Parameters
-TARGETS = [(5, 2.5), (20, 2.5)]
+TARGETS = [(3, 6), (7, 1)]
 # Router Configuration
 MAX_ROUTERS = 2
-MAX_ROUTER_POWER = 10  # dBm
+MAX_ROUTER_POWER = 20  # dBm
 ROUTER_ANTENNA_GAIN = 3  # dBi
 USER_ANTENNA_GAIN = 1  # dBi
-DIMENSIONS = 30, 5
+DIMENSIONS = 8, 7
 OPERATING_FREQUENCY = 5.180
-WALLS = [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]]
+WALLS = [
+    [(1, 5), (2, 5), WALL_TYPE.CHIP_BOARD],
+    [(0, 5), (1, 5), WALL_TYPE.CONCRETE],
+    #
+    [(3, 4), (6, 4), WALL_TYPE.CONCRETE],
+    [(2, 4), (3, 4), WALL_TYPE.CHIP_BOARD],
+    #
+    [(3, 4), (6, 4), WALL_TYPE.CONCRETE],
+    [(6, 4), (6, 7), WALL_TYPE.CONCRETE],
+    [(2, 4), (2, 7), WALL_TYPE.CONCRETE],
+    #
+    [(5, 0), (5, 3), WALL_TYPE.DRY_WALL],
+    [(2, 0), (2, 3), WALL_TYPE.DRY_WALL],
+]
 
 
 def _gene_space() -> list:
@@ -56,12 +107,12 @@ class WiFiCoverageGeneticAlgorithm(GeneticAlgorithm):
     Minimise amount of cells
     """
 
-    generations = 100
+    generations = 250
     mutation_rate = 0.25
-    num_of_parents = 100
-    population_size = 1000
+    num_of_parents = 20
+    population_size = 100
     selection_method = SelectionMethods.tournament_selection
-    replacement_method = ReplacementMethod.NO_REPLACEMENT
+    replacement_method = ReplacementMethod.WEAK_PARENT
     gene_space = _gene_space()
 
     def fitness_func(self, chromosome: list) -> float:

@@ -37,7 +37,7 @@ class CoverageGeneticAlgorithm(GeneticAlgorithm):
     num_of_parents = 100
     population_size = 1000
     selection_method = SelectionMethods.tournament_selection
-    replacement_method = ReplacementMethod.WEAK_PARENT
+    replacement_method = ReplacementMethod.NO_REPLACEMENT
     gene_space = _gene_space()
 
     def fitness_func(self, chromosome: list) -> float:

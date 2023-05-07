@@ -10,10 +10,10 @@ class SixHumpCamelGeneticAlgorithm(GeneticAlgorithm):
     # x, y
     gene_space = [(float, -3, 3), (float, -2, 2)]
     mutation_rate = 0.05
-    num_of_parents = 10
+    num_of_parents = 20
     population_size = 100
     selection_method = SelectionMethods.tournament_selection
-    replacement_method = ReplacementMethod.BOTH_PARENTS
+    replacement_method = ReplacementMethod.NO_REPLACEMENT
 
     def fitness_func(self, chromosome: list) -> float:
         x = chromosome

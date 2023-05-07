@@ -9,11 +9,10 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # MAX_ROUTER_POWER = 3  # dBm
 # ROUTER_ANTENNA_GAIN = 3  # dBi
 # USER_ANTENNA_GAIN = 1  # dBi
-# DESIRED_RSSI = -50
-# DIMENSIONS = 30, 5
-# OPERATING_FREQUENCY = 5.180
+# DESIRED_RECEIVED_POWER = -50
+# DIMENSIONS = 30, 5 # m
+# OPERATING_FREQUENCY = 5.180 # GHz
 # WALLS = []
-
 
 # # # Scenario 1.2
 # # Problem Parameters
@@ -23,7 +22,7 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # MAX_ROUTER_POWER = 10  # dBm
 # ROUTER_ANTENNA_GAIN = 3  # dBi
 # USER_ANTENNA_GAIN = 1  # dBi
-# DESIRED_RSSI = -50
+# DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
 # WALLS = []
@@ -37,7 +36,7 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # MAX_ROUTER_POWER = 10  # dBm
 # ROUTER_ANTENNA_GAIN = 3  # dBi
 # USER_ANTENNA_GAIN = 1  # dBi
-# DESIRED_RSSI = -50
+# DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
 # WALLS = [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]]
@@ -50,7 +49,7 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # MAX_ROUTER_POWER = 10  # dBm
 # ROUTER_ANTENNA_GAIN = 3  # dBi
 # USER_ANTENNA_GAIN = 1  # dBi
-# DESIRED_RSSI = -50
+# DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 8, 7
 # OPERATING_FREQUENCY = 5.180
 # WALLS = [
@@ -77,7 +76,7 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # MAX_ROUTER_POWER = 20  # dBm
 # ROUTER_ANTENNA_GAIN = 3  # dBi
 # USER_ANTENNA_GAIN = 1  # dBi
-# DESIRED_RSSI = -50
+# DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 8, 7
 # OPERATING_FREQUENCY = 5.180
 # WALLS = [
@@ -104,7 +103,7 @@ MAX_ROUTERS = 2
 MAX_ROUTER_POWER = 15  # dBm
 ROUTER_ANTENNA_GAIN = 3  # dBi
 USER_ANTENNA_GAIN = 1  # dBi
-DESIRED_RSSI = -50
+DESIRED_RECEIVED_POWER = -50
 DIMENSIONS = 20, 10
 OPERATING_FREQUENCY = 5.180
 WALLS = [
@@ -169,7 +168,7 @@ class WiFiCoverageGeneticAlgorithm(GeneticAlgorithm):
             OPERATING_FREQUENCY,
             ROUTER_ANTENNA_GAIN,
             USER_ANTENNA_GAIN,
-            DESIRED_RSSI,
+            DESIRED_RECEIVED_POWER,
             WALLS,
         )
         return plan.evaluate()
@@ -190,7 +189,7 @@ if __name__ == "__main__":
         OPERATING_FREQUENCY,
         ROUTER_ANTENNA_GAIN,
         USER_ANTENNA_GAIN,
-        DESIRED_RSSI,
+        DESIRED_RECEIVED_POWER,
         WALLS,
     )
     plan.plot()

@@ -28,7 +28,7 @@ class Plan:
             operating_frequency: float,
             router_antenna_gain: float,
             user_antenna_gain: float,
-            desired_rssi: float,
+            desired_received_power: float,
             walls=None,
     ):
         self.max_routers = max_sensors
@@ -48,7 +48,7 @@ class Plan:
 
         self.walls = walls or []
 
-        self.desired_rssi = desired_rssi
+        self.desired_rssi = desired_received_power
 
         self.propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
 
@@ -80,17 +80,17 @@ class Plan:
         signal_qualities = []
         for [_, rssi] in connections_registry.values():
             signal_qualities.append(rssi)
-        total_rssi = sum(signal_qualities) and 1 / sum(signal_qualities) or 0
-        rssi_variance = (
+        total_received_power = sum(signal_qualities) and 1 / sum(signal_qualities) or 0
+        received_power_variance = (
             statistics.variance(signal_qualities) + 0.01
             if len(signal_qualities) >= 2
             else 1
         )
-        effective_rssi = total_rssi / rssi_variance
+        effective_rssi = total_received_power / received_power_variance
 
         efficiency = self.max_routers / self.no_of_sensors
 
-        return 3 * coverage - 0.5 * effective_rssi + efficiency
+        return 3 * coverage + efficiency - 0.5 * effective_rssi
 
     def determine_received_power(self, router, user) -> float:
         transmit_power = router[0]

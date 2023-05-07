@@ -100,7 +100,7 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 TARGETS = [(3, 3), (16, 3), (3, 9), (6, 9), (11, 9), (13, 9), (18, 9)]
 # Router Configuration
 MAX_ROUTERS = 2
-MAX_ROUTER_POWER = 15  # dBm
+MAX_ROUTER_POWER = 20  # dBm
 ROUTER_ANTENNA_GAIN = 3  # dBi
 USER_ANTENNA_GAIN = 1  # dBi
 DESIRED_RECEIVED_POWER = -50

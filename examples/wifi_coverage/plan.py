@@ -1,6 +1,6 @@
-import math
 import statistics
 
+import math
 import matplotlib.pyplot as plt
 from adjustText import adjust_text
 
@@ -28,6 +28,7 @@ class Plan:
             operating_frequency: float,
             router_antenna_gain: float,
             user_antenna_gain: float,
+            desired_rssi: float,
             walls=None,
     ):
         self.max_routers = max_sensors
@@ -47,6 +48,8 @@ class Plan:
 
         self.walls = walls or []
 
+        self.desired_rssi = desired_rssi
+
         self.propagation_model = ITUP1238IndoorPropagationModel(operating_frequency)
 
     def connect_users(self):
@@ -56,8 +59,7 @@ class Plan:
             for router in self.routers:
                 rssi = self.determine_received_power(router, user)
 
-                DESIRED_RSSI = -50
-                if DESIRED_RSSI > rssi:
+                if self.desired_rssi > rssi:
                     continue
 
                 user_id = str(user)
@@ -140,7 +142,7 @@ class Plan:
                 plt.text(
                     x,
                     y,
-                    f"router {(round(x, 2), round(y, 2))}",
+                    f"router {(round(x, 2), round(y, 2), round(range, 2))}",
                     ha="center",
                 )
             )
@@ -164,7 +166,7 @@ class Plan:
             ax.plot(x_values, y_values, wall_type)
 
         plt.title("Plan", loc="left")
-        plt.title(f"MAX_ROUTERS {self.max_routers}", loc="right")
+        plt.title(f"DESIRED_RSSI {self.desired_rssi}\nMAX_ROUTERS {self.max_routers}", loc="right")
         plt.xlabel("x coordinates in meters")
         plt.ylabel("y coordinates in meters")
 

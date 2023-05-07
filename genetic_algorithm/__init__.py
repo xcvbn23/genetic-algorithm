@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 class ReplacementMethod(Enum):
     BOTH_PARENTS = auto()
     RANDOM = auto()
-    WEAK_PARENT = auto()
+    WEAK_PARENTS = auto()
+    WEAK_INDIVIDUALS = auto()
     NO_REPLACEMENT = auto()
 
 
@@ -120,18 +121,24 @@ class GeneticAlgorithm(ABC):
 
     def perform_replacement(self, parents: list, children: list) -> None:
         # TODO O(n) use hash table to make it 0(1)?
-        if ReplacementMethod.NO_REPLACEMENT:
+        prune_parents = []
+
+        if self.replacement_method == ReplacementMethod.NO_REPLACEMENT:
             for child in children:
                 self.population.append(child)
-        elif ReplacementMethod.RANDOM:
+
+        elif self.replacement_method == ReplacementMethod.RANDOM:
             for child in children:
                 random_position = random.randint(0, len(self.population) - 1)
                 self.population[random_position] = child
-        elif ReplacementMethod.BOTH_PARENTS:
-            for parent in parents:
-                parent_idx = self.population.index(parent)
-                self.population[parent_idx] = children[parent_idx]
-        elif ReplacementMethod.WEAK_PARENT:
+
+        elif self.replacement_method == ReplacementMethod.BOTH_PARENTS:
+            for i, parent in enumerate(parents):
+                parent_idx = next(j for j, individual in enumerate(self.population) if individual[0] == parent[0])
+                prune_parents.append(parent_idx)
+                self.population.append(children[i])
+
+        elif self.replacement_method == ReplacementMethod.WEAK_PARENTS:
             for child in children:
                 for parent in parents:
                     _, child_fitness, _ = child
@@ -140,6 +147,20 @@ class GeneticAlgorithm(ABC):
                         parent_idx = self.population.index(parent)
                         self.population[parent_idx] = children[parent_idx]
                         continue
+
+        elif self.replacement_method == ReplacementMethod.WEAK_INDIVIDUALS:
+            for child in children:
+                self.population.append(child)
+
+            self.population = sorted(
+                self.population,
+                key=lambda gene: gene[2],
+                reverse=True,
+            )
+            self.population = self.population[:self.population_size]
+
+        for parent in prune_parents:
+            self.population.pop(parent)
 
     def perform_selection(self) -> list:
         return self.selection_method(self.population, self.num_of_parents)
@@ -192,6 +213,8 @@ class GeneticAlgorithm(ABC):
 
         end = time.time()
         logger.info("Took %d seconds", end - start)
+
+        logger.info("Individuals %d", len(self.population))
 
         self.population.sort(key=lambda d: d[2], reverse=True)
 

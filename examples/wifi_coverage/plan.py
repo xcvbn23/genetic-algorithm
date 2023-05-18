@@ -24,25 +24,25 @@ class Plan:
             chromosome: list,
             users: list,
             dimensions: tuple,
-            max_sensors: int,
+            max_transceivers: int,
             operating_frequency: float,
-            router_antenna_gain: float,
-            user_antenna_gain: float,
+            transceiver_antenna_gain: float,
+            user_device_antenna_gain: float,
             desired_received_power: float,
             walls=None,
     ):
-        self.max_routers = max_sensors
+        self.max_transceivers = max_transceivers
 
-        self.router_antenna_gain = router_antenna_gain
-        self.user_antenna_gain = user_antenna_gain
+        self.transceiver_antenna_gain = transceiver_antenna_gain
+        self.user_device_antenna_gain = user_device_antenna_gain
 
-        self.no_of_sensors = chromosome[0]
+        self.no_of_transceivers = chromosome[0]
 
-        sensors = chromosome[1:]
-        sensors = list(split(sensors, 3))
-        self.routers = sensors[: self.no_of_sensors]
+        transceivers = chromosome[1:]
+        transceivers = list(split(transceivers, 3))
+        self.transceivers = transceivers[: self.no_of_transceivers]
 
-        self.users = users
+        self.users_devices = users
 
         self.w, self.h = dimensions
 
@@ -55,8 +55,8 @@ class Plan:
     def connect_users(self):
         connections = {}
 
-        for user in self.users:
-            for router in self.routers:
+        for user in self.users_devices:
+            for router in self.transceivers:
                 rssi = self.determine_received_power(router, user)
 
                 if self.desired_rssi > rssi:
@@ -75,7 +75,7 @@ class Plan:
     def evaluate(self):
         connections_registry = self.connect_users()
 
-        coverage = len(connections_registry) / len(self.users)
+        coverage = len(connections_registry) / len(self.users_devices)
 
         signal_qualities = []
         for [_, rssi] in connections_registry.values():
@@ -88,7 +88,7 @@ class Plan:
         )
         effective_rssi = total_received_power / received_power_variance
 
-        efficiency = self.max_routers / self.no_of_sensors
+        efficiency = self.max_transceivers / self.no_of_transceivers
 
         return 3 * coverage + efficiency - 0.5 * effective_rssi
 
@@ -104,9 +104,9 @@ class Plan:
                 path_loss += wall_type
         received_power = (
                 transmit_power
-                + self.router_antenna_gain
+                + self.transceiver_antenna_gain
                 - path_loss
-                + self.user_antenna_gain
+                + self.user_device_antenna_gain
         )
         return received_power
 
@@ -135,19 +135,19 @@ class Plan:
                 )
             )
 
-        for router in self.routers:
+        for router in self.transceivers:
             range, x, y = router
             ax.scatter(x, y, c="r")
             texts.append(
                 plt.text(
                     x,
                     y,
-                    f"router {(round(x, 2), round(y, 2), round(range, 2))}",
+                    f"transceiver {(round(x, 2), round(y, 2), round(range, 2))}",
                     ha="center",
                 )
             )
 
-        adjust_text(texts)
+        adjust_text(texts, lim=10000)
 
         for wall in self.walls:
             point1, point2, wall_type = wall
@@ -166,7 +166,7 @@ class Plan:
             ax.plot(x_values, y_values, wall_type)
 
         plt.title("Plan", loc="left")
-        plt.title(f"DESIRED_RSSI {self.desired_rssi}\nMAX_ROUTERS {self.max_routers}", loc="right")
+        plt.title(f"DESIRED_RSSI {self.desired_rssi}\nMAX_TRANSCEIVERS {self.max_transceivers}", loc="right")
         plt.xlabel("x coordinates in meters")
         plt.ylabel("y coordinates in meters")
 

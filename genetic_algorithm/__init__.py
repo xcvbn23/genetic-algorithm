@@ -99,7 +99,7 @@ class GeneticAlgorithm(ABC):
         for i, child in enumerate(children):
             id, individual, fitness = children[i]
             for j, gene in enumerate(individual):
-                if random.random() < self.mutation_rate:
+                if self.mutation_rate > random.random():
                     continue
 
                 gene_type, min, max = self.gene_space[j]
@@ -228,8 +228,8 @@ class GeneticAlgorithm(ABC):
         plt.xlabel("Generation")
         plt.ylabel("Fitness Value")
 
-        plt.title("foo")
-        plt.suptitle("f")
+        plt.title("Fitness Graph")
+        # plt.suptitle("f")
 
         plt.savefig('fitness-graph.png')
 

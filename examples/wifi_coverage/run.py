@@ -4,24 +4,25 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # # # Scenario 1.1
 # # Problem Parameters
 # TARGETS = [(5, 2.5), (20, 2.5)]
-# # Router Configuration
-# MAX_ROUTERS = 2
-# MAX_ROUTER_POWER = 3  # dBm
-# ROUTER_ANTENNA_GAIN = 3  # dBi
-# USER_ANTENNA_GAIN = 1  # dBi
+# # Transceiver Configuration
+# MAX_TRANSCEIVERS = 2
+# MAX_TRANSCEIVER_POWER = 3  # dBm
+# TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+# USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 # DESIRED_RECEIVED_POWER = -50
-# DIMENSIONS = 30, 5 # m
-# OPERATING_FREQUENCY = 5.180 # GHz
+# DIMENSIONS = 30, 5  # m
+# OPERATING_FREQUENCY = 5.180  # GHz
 # WALLS = []
+
 
 # # # Scenario 1.2
 # # Problem Parameters
 # TARGETS = [(5, 2.5), (20, 2.5)]
-# # Router Configuration
-# MAX_ROUTERS = 2
-# MAX_ROUTER_POWER = 10  # dBm
-# ROUTER_ANTENNA_GAIN = 3  # dBi
-# USER_ANTENNA_GAIN = 1  # dBi
+# # Transceiver Configuration
+# MAX_TRANSCEIVERS = 2
+# MAX_TRANSCEIVER_POWER = 10  # dBm
+# TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+# USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 # DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
@@ -31,24 +32,25 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # # # Scenario 1.3
 # # Problem Parameters
 # TARGETS = [(5, 2.5), (20, 2.5)]
-# # Router Configuration
-# MAX_ROUTERS = 2
-# MAX_ROUTER_POWER = 10  # dBm
-# ROUTER_ANTENNA_GAIN = 3  # dBi
-# USER_ANTENNA_GAIN = 1  # dBi
+# # Transceiver Configuration
+# MAX_TRANSCEIVERS = 2
+# MAX_TRANSCEIVER_POWER = 10  # dBm
+# TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+# USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 # DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 30, 5
 # OPERATING_FREQUENCY = 5.180
 # WALLS = [[(15, 4), (15, 1), WALL_TYPE.CONCRETE]]
 
+
 # # # Scenario 2.1
 # # Problem Parameters
 # TARGETS = [(3, 6), (7, 1)]
-# # Router Configuration
-# MAX_ROUTERS = 2
-# MAX_ROUTER_POWER = 10  # dBm
-# ROUTER_ANTENNA_GAIN = 3  # dBi
-# USER_ANTENNA_GAIN = 1  # dBi
+# # Transceiver Configuration
+# MAX_TRANSCEIVERS = 2
+# MAX_TRANSCEIVER_POWER = 10  # dBm
+# TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+# USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 # DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 8, 7
 # OPERATING_FREQUENCY = 5.180
@@ -71,11 +73,11 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # # # Scenario 2.2
 # # Problem Parameters
 # TARGETS = [(3, 6), (7, 1)]
-# # Router Configuration
-# MAX_ROUTERS = 2
-# MAX_ROUTER_POWER = 20  # dBm
-# ROUTER_ANTENNA_GAIN = 3  # dBi
-# USER_ANTENNA_GAIN = 1  # dBi
+# # Transceiver Configuration
+# MAX_TRANSCEIVERS = 2
+# MAX_TRANSCEIVER_POWER = 20  # dBm
+# TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+# USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 # DESIRED_RECEIVED_POWER = -50
 # DIMENSIONS = 8, 7
 # OPERATING_FREQUENCY = 5.180
@@ -98,11 +100,11 @@ from genetic_algorithm import GeneticAlgorithm, SelectionMethods, ReplacementMet
 # # Scenario 3
 # Problem Parameters
 TARGETS = [(3, 3), (16, 3), (3, 9), (6, 9), (11, 9), (13, 9), (18, 9)]
-# Router Configuration
-MAX_ROUTERS = 2
-MAX_ROUTER_POWER = 20  # dBm
-ROUTER_ANTENNA_GAIN = 3  # dBi
-USER_ANTENNA_GAIN = 1  # dBi
+# Transceiver Configuration
+MAX_TRANSCEIVERS = 2
+MAX_TRANSCEIVER_POWER = 20  # dBm
+TRANSCEIVER_ANTENNA_GAIN = 3  # dBi
+USER_DEVICE_ANTENNA_GAIN = 1  # dBi
 DESIRED_RECEIVED_POWER = -50
 DIMENSIONS = 20, 10
 OPERATING_FREQUENCY = 5.180
@@ -134,10 +136,10 @@ WALLS = [
 def _gene_space() -> list:
     # router = range, x, y
     # gene = max_routers, [router]
-    definition = [(int, 1, MAX_ROUTERS)]
+    definition = [(int, 1, MAX_TRANSCEIVERS)]
     w, h = DIMENSIONS
-    definition += MAX_ROUTERS * [
-        (int, 1, MAX_ROUTER_POWER),
+    definition += MAX_TRANSCEIVERS * [
+        (int, 1, MAX_TRANSCEIVER_POWER),
         (float, 0, w),
         (float, 0, h),
     ]
@@ -153,7 +155,7 @@ class WiFiCoverageGeneticAlgorithm(GeneticAlgorithm):
 
     generations = 250
     mutation_rate = 0.25
-    num_of_parents = 20
+    num_of_parents = 40
     population_size = 100
     selection_method = SelectionMethods.tournament_selection
     replacement_method = ReplacementMethod.WEAK_INDIVIDUALS
@@ -164,10 +166,10 @@ class WiFiCoverageGeneticAlgorithm(GeneticAlgorithm):
             chromosome,
             TARGETS,
             DIMENSIONS,
-            MAX_ROUTERS,
+            MAX_TRANSCEIVERS,
             OPERATING_FREQUENCY,
-            ROUTER_ANTENNA_GAIN,
-            USER_ANTENNA_GAIN,
+            TRANSCEIVER_ANTENNA_GAIN,
+            USER_DEVICE_ANTENNA_GAIN,
             DESIRED_RECEIVED_POWER,
             WALLS,
         )
@@ -185,10 +187,10 @@ if __name__ == "__main__":
         chromosome,
         TARGETS,
         DIMENSIONS,
-        MAX_ROUTERS,
+        MAX_TRANSCEIVERS,
         OPERATING_FREQUENCY,
-        ROUTER_ANTENNA_GAIN,
-        USER_ANTENNA_GAIN,
+        TRANSCEIVER_ANTENNA_GAIN,
+        USER_DEVICE_ANTENNA_GAIN,
         DESIRED_RECEIVED_POWER,
         WALLS,
     )
